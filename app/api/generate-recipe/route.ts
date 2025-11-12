@@ -1,12 +1,100 @@
 import { NextRequest, NextResponse } from "next/server";
 
+// Rate limiting - simple in-memory store
+const rateLimit = new Map<string, { count: number; resetTime: number }>();
+const RATE_LIMIT_WINDOW = 60000; // 1 minute
+const MAX_REQUESTS_PER_WINDOW = 10; // 10 requests per minute
+
+// Input validation constants
+const MAX_INGREDIENTS = 50;
+const MAX_INGREDIENT_LENGTH = 100;
+
+function sanitizeIngredient(ingredient: string): string {
+  // Remove any characters that could be used for prompt injection
+  // Allow only letters, numbers, spaces, hyphens, and basic punctuation
+  return ingredient
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9\s\-'.]/gi, '') // Remove special characters except hyphen, apostrophe, period
+    .substring(0, MAX_INGREDIENT_LENGTH); // Enforce max length
+}
+
+function checkRateLimit(identifier: string): boolean {
+  const now = Date.now();
+  const userLimit = rateLimit.get(identifier);
+
+  if (!userLimit || now > userLimit.resetTime) {
+    // New window or expired window
+    rateLimit.set(identifier, {
+      count: 1,
+      resetTime: now + RATE_LIMIT_WINDOW,
+    });
+    return true;
+  }
+
+  if (userLimit.count >= MAX_REQUESTS_PER_WINDOW) {
+    return false;
+  }
+
+  userLimit.count++;
+  return true;
+}
+
 export async function POST(request: NextRequest) {
   try {
-    const { ingredients } = await request.json();
+    // Rate limiting check
+    const identifier = request.headers.get('x-forwarded-for') ||
+                      request.headers.get('x-real-ip') ||
+                      'unknown';
 
-    if (!ingredients || ingredients.length === 0) {
+    if (!checkRateLimit(identifier)) {
+      return NextResponse.json(
+        { error: "Too many requests. Please try again in a minute." },
+        { status: 429 }
+      );
+    }
+
+    const body = await request.json();
+    const { ingredients } = body;
+
+    // Input validation
+    if (!ingredients) {
       return NextResponse.json(
         { error: "No ingredients provided" },
+        { status: 400 }
+      );
+    }
+
+    if (!Array.isArray(ingredients)) {
+      return NextResponse.json(
+        { error: "Ingredients must be an array" },
+        { status: 400 }
+      );
+    }
+
+    if (ingredients.length === 0) {
+      return NextResponse.json(
+        { error: "No ingredients provided" },
+        { status: 400 }
+      );
+    }
+
+    if (ingredients.length > MAX_INGREDIENTS) {
+      return NextResponse.json(
+        { error: `Too many ingredients. Maximum is ${MAX_INGREDIENTS}` },
+        { status: 400 }
+      );
+    }
+
+    // Validate and sanitize each ingredient
+    const sanitizedIngredients = ingredients
+      .filter((item): item is string => typeof item === 'string') // Type guard
+      .map(sanitizeIngredient)
+      .filter(item => item.length > 0); // Remove empty strings after sanitization
+
+    if (sanitizedIngredients.length === 0) {
+      return NextResponse.json(
+        { error: "No valid ingredients provided" },
         { status: 400 }
       );
     }
@@ -21,9 +109,10 @@ export async function POST(request: NextRequest) {
     }
 
     // Create a prompt that emphasizes using ONLY the provided ingredients
+    // Using sanitized ingredients to prevent prompt injection
     const prompt = `You are a creative and talented chef. Create an INCREDIBLY DELICIOUS recipe using ONLY the ingredients I have.
 
-MY INGREDIENTS: ${ingredients.join(", ")}
+MY INGREDIENTS: ${sanitizedIngredients.join(", ")}
 
 CRITICAL RULES:
 - You MUST use AS MANY of my ingredients AS POSSIBLE
@@ -73,8 +162,11 @@ Return ONLY the JSON, no additional text.`;
     });
 
     if (!response.ok) {
-      const errorData = await response.json();
-      console.error("Groq API error:", errorData);
+      // Only log errors in development mode
+      if (process.env.NODE_ENV === 'development') {
+        const errorData = await response.json().catch(() => ({}));
+        console.error("Groq API error:", errorData);
+      }
       return NextResponse.json(
         { error: "Failed to generate recipe" },
         { status: response.status }
@@ -99,15 +191,21 @@ Return ONLY the JSON, no additional text.`;
 
       return NextResponse.json({ recipe });
     } catch (parseError) {
-      console.error("Error parsing recipe JSON:", parseError);
-      console.error("Recipe text:", recipeText);
+      // Only log detailed errors in development
+      if (process.env.NODE_ENV === 'development') {
+        console.error("Error parsing recipe JSON:", parseError);
+        console.error("Recipe text preview:", recipeText.substring(0, 200));
+      }
       return NextResponse.json(
         { error: "Failed to parse recipe" },
         { status: 500 }
       );
     }
   } catch (error) {
-    console.error("Error generating recipe:", error);
+    // Only log detailed errors in development
+    if (process.env.NODE_ENV === 'development') {
+      console.error("Error generating recipe:", error);
+    }
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }
