@@ -100,8 +100,8 @@ export default function IngredientInput({
           onChange={(e) => setInputValue(e.target.value)}
           onKeyDown={handleKeyDown}
           onFocus={() => inputValue && setShowSuggestions(true)}
-          placeholder="Type ingredients (separate with commas: chicken, tomato, onion)..."
-          className="w-full px-4 py-3 text-lg border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none"
+          placeholder="Type ingredients (comma-separated)..."
+          className="w-full px-4 py-3 text-base sm:text-lg border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none min-h-[48px]"
         />
 
         {/* Autocomplete Suggestions */}
@@ -111,7 +111,7 @@ export default function IngredientInput({
               <button
                 key={suggestion}
                 onClick={() => handleAddIngredient(suggestion)}
-                className={`w-full px-4 py-2 text-left hover:bg-blue-50 ${
+                className={`w-full px-4 py-3 text-left hover:bg-blue-50 active:bg-blue-100 transition-colors min-h-[44px] ${
                   index === selectedIndex ? "bg-blue-100" : ""
                 }`}
               >
@@ -131,7 +131,7 @@ export default function IngredientInput({
             </h3>
             <button
               onClick={onClearAll}
-              className="text-sm text-red-600 hover:text-red-700 font-medium"
+              className="text-sm text-red-600 hover:text-red-700 active:text-red-800 font-medium py-1 px-2 min-h-[32px]"
             >
               Clear All
             </button>
@@ -140,12 +140,12 @@ export default function IngredientInput({
             {ingredients.map((ingredient) => (
               <span
                 key={ingredient}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-100 text-blue-800 rounded-full text-sm font-medium"
+                className="inline-flex items-center gap-1.5 px-3 py-2 bg-blue-100 text-blue-800 rounded-full text-sm font-medium"
               >
                 {ingredient}
                 <button
                   onClick={() => onRemoveIngredient(ingredient)}
-                  className="hover:bg-blue-200 rounded-full p-0.5"
+                  className="hover:bg-blue-200 active:bg-blue-300 rounded-full p-1 min-w-[24px] min-h-[24px] flex items-center justify-center transition-colors"
                   aria-label={`Remove ${ingredient}`}
                 >
                   <svg

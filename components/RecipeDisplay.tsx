@@ -33,17 +33,17 @@ export default function RecipeDisplay({ recipe, loading }: RecipeDisplayProps) {
   }
 
   return (
-    <div className="w-full bg-white rounded-lg shadow-lg p-8 space-y-6">
+    <div className="w-full bg-white rounded-lg shadow-lg p-4 sm:p-6 md:p-8 space-y-4 sm:space-y-6">
       {/* Recipe Header */}
       <div className="border-b border-gray-200 pb-4">
-        <h2 className="text-3xl font-bold text-gray-900 mb-2">{recipe.title}</h2>
+        <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">{recipe.title}</h2>
         {recipe.description && (
-          <p className="text-gray-600 italic">{recipe.description}</p>
+          <p className="text-gray-600 italic text-sm sm:text-base">{recipe.description}</p>
         )}
       </div>
 
       {/* Recipe Info */}
-      <div className="flex flex-wrap gap-4 text-sm">
+      <div className="flex flex-wrap gap-3 sm:gap-4 text-xs sm:text-sm">
         {recipe.prepTime && (
           <div className="flex items-center gap-2">
             <svg

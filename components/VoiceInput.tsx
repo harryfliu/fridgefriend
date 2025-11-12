@@ -102,10 +102,10 @@ export default function VoiceInput({ onIngredientDetected }: VoiceInputProps) {
   }
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-2 w-full sm:w-auto">
       <button
         onClick={toggleListening}
-        className={`flex items-center gap-2 px-4 py-3 rounded-lg font-medium transition-all ${
+        className={`flex items-center justify-center gap-2 w-full sm:w-auto px-4 py-3 rounded-lg font-medium transition-all min-h-[48px] ${
           isListening
             ? "bg-red-500 hover:bg-red-600 text-white animate-pulse"
             : "bg-blue-500 hover:bg-blue-600 text-white"
@@ -126,13 +126,13 @@ export default function VoiceInput({ onIngredientDetected }: VoiceInputProps) {
       </button>
 
       {transcript && (
-        <div className="text-sm text-gray-600 italic">
+        <div className="text-sm text-gray-600 italic text-center sm:text-left">
           Heard: {transcript}
         </div>
       )}
 
       {isListening && (
-        <div className="text-xs text-gray-500">
+        <div className="text-xs text-gray-500 text-center sm:text-left">
           Say ingredients separated by commas or "and"
         </div>
       )}

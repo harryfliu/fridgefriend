@@ -77,19 +77,21 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8 px-4">
-      <main className="max-w-4xl mx-auto space-y-8">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-6 px-4 sm:py-8 sm:px-6">
+      <main className="max-w-4xl mx-auto space-y-6 sm:space-y-8">
         {/* Header */}
         <div className="text-center space-y-2">
-          <h1 className="text-5xl font-bold text-gray-900">Fridge Friend</h1>
-          <p className="text-lg text-gray-600">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900">
+            Fridge Friend
+          </h1>
+          <p className="text-base sm:text-lg text-gray-600 px-2">
             Turn your ingredients into delicious recipes
           </p>
         </div>
 
         {/* Input Section */}
-        <div className="bg-white rounded-lg shadow-lg p-6 space-y-4">
-          <h2 className="text-2xl font-semibold text-gray-900">
+        <div className="bg-white rounded-lg shadow-lg p-4 sm:p-6 space-y-4">
+          <h2 className="text-xl sm:text-2xl font-semibold text-gray-900">
             What ingredients do you have?
           </h2>
 
@@ -100,16 +102,14 @@ export default function Home() {
             onClearAll={handleClearAll}
           />
 
-          <div className="flex items-center gap-4 pt-2">
-            <div className="flex-shrink-0">
-              <VoiceInput onIngredientDetected={handleAddIngredient} />
-            </div>
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 pt-2">
+            <VoiceInput onIngredientDetected={handleAddIngredient} />
 
             {ingredients.length > 0 && (
               <button
                 onClick={handleGenerateRecipe}
                 disabled={loading}
-                className="flex-1 bg-green-500 hover:bg-green-600 disabled:bg-gray-400 text-white font-semibold py-3 px-6 rounded-lg transition-colors"
+                className="w-full sm:flex-1 bg-green-500 hover:bg-green-600 disabled:bg-gray-400 text-white font-semibold py-3 px-6 rounded-lg transition-colors min-h-[48px]"
               >
                 {loading ? "Generating..." : "Generate Recipe"}
               </button>
